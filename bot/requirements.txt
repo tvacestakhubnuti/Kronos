@@ -1,0 +1,9 @@
+# torch is installed separately in the Dockerfile (CPU-only build)
+numpy
+pandas==2.2.3
+einops==0.8.1
+huggingface_hub==0.33.1
+safetensors==0.6.2
+tqdm==4.67.1
+ccxt==4.5.92
+requests>=2.32
