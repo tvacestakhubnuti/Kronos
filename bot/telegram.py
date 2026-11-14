@@ -17,12 +17,17 @@ class Telegram:
     def send(self, text):
         log.info("notify: %s", text.replace("\n", " | "))
         if not self.enabled:
+            log.warning("telegram disabled: TELEGRAM_TOKEN or TELEGRAM_CHAT_ID is empty")
             return
         try:
-            requests.post(f"{self.api}/sendMessage",
-                          json={"chat_id": self.chat_id, "text": text}, timeout=15)
+            r = requests.post(f"{self.api}/sendMessage",
+                              json={"chat_id": self.chat_id, "text": text}, timeout=15)
+            if not r.ok:
+                # Telegram's error body never contains the token
+                log.warning("telegram send failed: HTTP %s %s", r.status_code, r.text[:200])
         except Exception as e:  # never let notifications crash the bot
-            log.warning("telegram send failed: %s", e)
+            # do not log the exception text: it can contain the request URL with the token
+            log.warning("telegram send failed: %s", type(e).__name__)
 
     def listen(self, handlers):
         """Run command handlers ({'/status': fn, ...}) in a background thread.
@@ -46,7 +51,7 @@ class Telegram:
                         if fn:
                             self.send(fn())
                 except Exception as e:
-                    log.warning("telegram poll failed: %s", e)
+                    log.warning("telegram poll failed: %s", type(e).__name__)
                     time.sleep(10)
 
         threading.Thread(target=loop, daemon=True).start()
