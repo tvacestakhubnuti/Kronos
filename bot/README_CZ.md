@@ -55,8 +55,12 @@ V `.env` vyplň aspoň `TELEGRAM_TOKEN` a `TELEGRAM_CHAT_ID` (ulož: `Ctrl+O`, `
 Spuštění (první sestavení trvá ~5 minut):
 
 ```bash
+mkdir -p state && chown -R 1000:1000 state
 docker compose up -d --build
 ```
+
+Složka `state` musí patřit uživateli s ID 1000, pod kterým bot v kontejneru běží
+(jinak skončí chybou `PermissionError: ... /app/state/hf-cache`).
 
 Do minuty ti na Telegram přijde zpráva „🤖 Bot spuštěn“. Bot se sám spustí i po restartu serveru.
 

@@ -10,7 +10,7 @@ RUN pip install -r bot/requirements.txt
 COPY model/ model/
 COPY bot/ bot/
 
-RUN useradd -m botuser && mkdir -p /app/state && chown -R botuser /app
+RUN useradd -m -u 1000 botuser && mkdir -p /app/state && chown -R botuser /app
 USER botuser
 
 CMD ["python", "-m", "bot.main"]
