@@ -69,7 +69,7 @@ def main():
     
     # Start server
     try:
-        from app import app
+        from app import app, DEBUG_MODE, HOST, PORT
         print("✅ Web server started successfully!")
         print(f"🌐 Access URL: http://localhost:7070")
         print("💡 Tip: Press Ctrl+C to stop server")
@@ -79,7 +79,7 @@ def main():
         webbrowser.open('http://localhost:7070')
         
         # Start Flask application
-        app.run(debug=True, host='0.0.0.0', port=7070)
+        app.run(debug=DEBUG_MODE, host=HOST, port=PORT)
         
     except Exception as e:
         print(f"❌ Startup failed: {e}")

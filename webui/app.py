@@ -22,7 +22,16 @@ except ImportError:
     print("Warning: Kronos model cannot be imported, will use simulated data for demonstration")
 
 app = Flask(__name__)
-CORS(app)
+# Security: only allow cross-origin requests from the local UI itself
+CORS(app, origins=["http://localhost:7070", "http://127.0.0.1:7070"])
+
+# Security: debug mode and bind address are opt-in via environment variables
+DEBUG_MODE = os.environ.get('KRONOS_DEBUG', '0') == '1'
+HOST = os.environ.get('KRONOS_HOST', '127.0.0.1')
+PORT = int(os.environ.get('KRONOS_PORT', '7070'))
+
+# Only files inside this directory may be loaded through the API
+DATA_DIR = os.path.realpath(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data'))
 
 # Global variables to store models
 tokenizer = None
@@ -75,9 +84,22 @@ def load_data_files():
     
     return data_files
 
+def resolve_data_path(file_path):
+    """Return the real path if it lies inside DATA_DIR, otherwise None"""
+    if not isinstance(file_path, str) or not file_path:
+        return None
+    candidate = file_path if os.path.isabs(file_path) else os.path.join(DATA_DIR, file_path)
+    real = os.path.realpath(candidate)
+    if os.path.commonpath([real, DATA_DIR]) != DATA_DIR or not os.path.isfile(real):
+        return None
+    return real
+
 def load_data_file(file_path):
     """Load data file"""
     try:
+        file_path = resolve_data_path(file_path)
+        if file_path is None:
+            return None, "File must be located in the data directory"
         if file_path.endswith('.csv'):
             df = pd.read_csv(file_path)
         elif file_path.endswith('.feather'):
@@ -705,4 +727,4 @@ if __name__ == '__main__':
     else:
         print("Tip: Will use simulated data for demonstration")
     
-    app.run(debug=True, host='0.0.0.0', port=7070)
+    app.run(debug=DEBUG_MODE, host=HOST, port=PORT)
